@@ -111,26 +111,87 @@ _Feature based is not available for now with IAB Consent Framework. But since th
 
 ## Consent Management Provider (CMP)
 
-https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md
+"CMP" means a company that can read the vendors chosen by a website operator and the consent status of an end user (either service specific (through a first-party cookie) or global (through a third-party cookie).
 
 ### Required API
 
-https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md#what-api-will-need-to-be-provided-by-the-cmp-
-https://github.m6web.fr/m6web/site-6play-v4/blob/master/src/app/modules/gdpr/iab/cmp/consentManager.js
-https://github.m6web.fr/m6web/site-6play-v4/blob/master/src/app/modules/gdpr/iab/cmp/model.js
+Every consent manager MUST provide the following API:
+
+`__cmp(Command, Parameter, Callback)`
+
+This API provide few command : 
+
+<table>
+  <tr>
+    <td>Command</td>
+    <td>Parameter</td>
+    <td>Callback</td>
+    <td>Comments</td>
+  </tr>
+  <tr>
+    <td>getVendorConsents</td>
+    <td>Vendors Ids [Array:String]</td>
+    <td>Callback(VendorConsents object, success: boolean)</td>
+    <td>Vendor consents strings</td>
+  </tr>
+  <tr>
+    <td>getConsentData</td>
+    <td>Consent string [String]</td>
+    <td>Callback(VendorConsentData object, success: boolean)</td>
+    <td>Consents data from user</td>
+  </tr>
+  <tr>
+    <td>ping</td>
+    <td> - </td>
+    <td>Callback(PingReturn object, success: boolean)</td>
+    <td>The "ping" command invokes the callback immediately with information about whether the main CMP script has loaded yet and if GDPR has been configured for all users or just EU users. </td>
+  </tr>
+</table>
 
 ### Communication with vendors
 
-https://github.m6web.fr/m6web/site-6play-v4/blob/master/src/app/modules/gdpr/iab/cmp/cmp.js
+For communication with vendors we mostly use the `__cmp` function for local communication and via `iframe` (standard).
 
 #### `window.__cmp`
+The function __cmp is created like this : 
+```js
+export const __cmp = {
+  getVendorConsents: vendorConsentsLoader,
+  getConsentData: vendorConsentDataLoader,
+  ping: () => {
+    const isCmpLoaded = !!document.querySelector('iframe[name=__cmpLocator]');
 
-https://github.m6web.fr/m6web/site-6play-v4/blob/master/src/app/modules/gdpr/iab/cmp/cmp.js#L68
+    return new PingReturn(isCmpLoaded);
+  },
+};
+```
+
+So you can call this function anywhere in the code.
+
+For exemple, you cann get vendor consents :
+
+```js
+__cmp.getVendorConsents()
+```
 
 #### Via (standard) iframe
 
-https://github.m6web.fr/m6web/site-6play-v4/blob/master/src/app/modules/gdpr/iab/cmp/cmp.js#L33
+Standard iframe is call with eventListener in this function : 
+```js
+export const bootIabStandardIframe = () => {
+  window.addEventListener('message', handleMessage);
+
+  const iframe = document.createElement('iframe');
+  iframe.name = '__cmpLocator';
+  iframe.width = 0;
+  iframe.height = 0;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+};
+```
+
+if a message arrive with `data.__cmpCall` the iframe is call and user can choose his data feed with us.
 
 #### Via (safe) iframe
 
-/!\ Celui la il existe pas ENCORE
+/!\ Not available
