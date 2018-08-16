@@ -199,7 +199,9 @@ export const bootIabStandardIframe = () => {
 };
 ```
 
-if a message arrive with `data.__cmpCall` the iframe is call and user can choose his data feed with us.
+The iframe always exist since the user has given access to its data. 
+if user give consent the app is able to converse with it's child frame.
+After that the child frames will send messages to your app and return information concerning the previously agreed consents.
 
 #### Via (safe) iframe
 Safe frame is not available but you can see this issue : 
