@@ -110,8 +110,7 @@ Some other, like us at M6Web, prefers to use a less granular one and to manage c
 _Feature based is not available for now with IAB Consent Framework. But since the feature field is available in the VendorList, we can imagine managing consents using feature based approach_
 
 ## Consent Management Provider (CMP)
-
-"CMP" means a company that can read the vendors chosen by a website operator and the consent status of an end user (either service specific (through a first-party cookie) or global (through a third-party cookie).
+CMP is a company who can read the vendors chosen by a customer (ex: google, analytics ... ) and the company can see the consent status of this user.
 
 ### Required API
 
