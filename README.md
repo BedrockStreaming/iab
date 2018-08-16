@@ -155,8 +155,18 @@ For communication with vendors we mostly use the `__cmp` function for local comm
 The function __cmp is created like this : 
 ```js
 export const __cmp = {
-  getVendorConsents: vendorConsentsLoader,
-  getConsentData: vendorConsentDataLoader,
+  getVendorConsents: (thirdPartyIds = []) => {
+    return new VendorConsents(
+      thirdPartyIds,
+      [''], // Purpose array
+      'Constent string',
+    );
+  },
+  getConsentData: (metadata, gdprApplies = true) => {
+    this.consentData = metadata;
+    this.gdprApplies = gdprApplies;
+    this.hasGlobalScope = false;
+  },
   ping: () => {
     const isCmpLoaded = !!document.querySelector('iframe[name=__cmpLocator]');
 
