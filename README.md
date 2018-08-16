@@ -202,5 +202,12 @@ export const bootIabStandardIframe = () => {
 if a message arrive with `data.__cmpCall` the iframe is call and user can choose his data feed with us.
 
 #### Via (safe) iframe
+Safe frame is not available but you can see this issue : 
 
-/!\ Not available
+[InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework#38](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/issues/38)
+
+and this code :
+
+[https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md#via-safeframes-](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md#via-safeframes-)
+
+> An updated safeFrame implementation/specification  **will provide**  the method $sf.ext.cmp(command, parameter)
