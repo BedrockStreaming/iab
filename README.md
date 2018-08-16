@@ -114,7 +114,7 @@ CMP is a company who can read the vendors chosen by a customer (ex: google, anal
 
 ### Required API
 
-Every consent manager MUST provide the following API:
+Each CMP must provide the following API:
 
 `__cmp(Command, Parameter, Callback)`
 
