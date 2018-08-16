@@ -143,7 +143,7 @@ This API provide few command :
     <td>ping</td>
     <td> - </td>
     <td>Callback(PingReturn object, success: boolean)</td>
-    <td>The "ping" command invokes the callback immediately with information about whether the main CMP script has loaded yet and if GDPR has been configured for all users or just EU users. </td>
+    <td>This function invoke the callback immediatly with some informations about the CMP script has loaded for all user.</td>
   </tr>
 </table>
 
