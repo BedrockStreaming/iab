@@ -110,15 +110,18 @@ Some other, like us at M6Web, prefers to use a less granular one and to manage c
 _Feature based is not available for now with IAB Consent Framework. But since the feature field is available in the VendorList, we can imagine managing consents using feature based approach_
 
 ## Consent Management Provider (CMP)
-CMP is a company who can read the vendors chosen by a customer (ex: google, analytics ... ) and the company can see the consent status of this user.
+
+The CMP is a tool that aims to make information transit between the application and the different third parties involved. It's actually the "standard" (IAB way) to share information concerning user consents with other advertising (tracking and so forth) companies.
 
 ### Required API
 
-Each CMP must provide the following API:
+To make communication easier, a contract is etablished between the provider (the user in OUR app) and the consumer (the third party company tool).
+
+The CMP should follow this API:
 
 `__cmp(Command, Parameter, Callback)`
 
-This API provide few command : 
+And provide the following as `Command`:
 
 <table>
   <tr>
@@ -129,87 +132,69 @@ This API provide few command :
   </tr>
   <tr>
     <td>getVendorConsents</td>
-    <td>Vendors Ids [Array:String]</td>
-    <td>Callback(VendorConsents object, success: boolean)</td>
-    <td>Vendor consents strings</td>
+    <td>Vendors Ids (array of string)</td>
+    <td>Callback(a VendorConsents object, a success boolean)</td>
+    <td>It allows to retrieve information from the consent string concerning the different accepted / denied consents of the current user</td>
   </tr>
   <tr>
     <td>getConsentData</td>
     <td>Consent string [String]</td>
     <td>Callback(VendorConsentData object, success: boolean)</td>
-    <td>Consents data from user</td>
+    <td>It provides the consent data of a user for a given string</td>
   </tr>
   <tr>
     <td>ping</td>
     <td> - </td>
     <td>Callback(PingReturn object, success: boolean)</td>
-    <td>This function invoke the callback immediatly with some informations about the CMP script has loaded for all user.</td>
+    <td>It only exist to check if the CMP is loaded (not sure about it)</td>
   </tr>
 </table>
 
 ### Communication with vendors
 
-For communication with vendors we mostly use the `__cmp` function for local communication and via `iframe` (standard).
+For communication with vendors we have to rely on our `__cmp` implementation. The communication can be etablished in 3 main ways:
 
 #### `window.__cmp`
-The function __cmp is created like this : 
+
+The function \_\_cmp is created like this :
+
 ```js
 export const __cmp = {
-  getVendorConsents: (thirdPartyIds = []) => {
-    return new VendorConsents(
-      thirdPartyIds,
-      [''], // Purpose array
-      'Constent string',
-    );
-  },
-  getConsentData: (metadata, gdprApplies = true) => {
-    this.consentData = metadata;
-    this.gdprApplies = gdprApplies;
-    this.hasGlobalScope = false;
-  },
-  ping: () => {
-    const isCmpLoaded = !!document.querySelector('iframe[name=__cmpLocator]');
-
-    return new PingReturn(isCmpLoaded);
-  },
+  getVendorConsents: () => /* some process to handle the vendor consents */,
+  getConsentData: : () => /* some process to handle the vendor consent data */,
+  ping: () => /* some process to know if the CMP is loaded. Generally, it's only checking for the iframe locator to exist */,
 };
 ```
 
-So you can call this function anywhere in the code.
-
-For exemple, you cann get vendor consents :
-
-```js
-__cmp.getVendorConsents()
-```
+Since `__cmp` is bound to window, it'as available everywhere in the app using `window.__cmp`.
 
 #### Via (standard) iframe
 
-Standard iframe is call with eventListener in this function : 
-```js
-export const bootIabStandardIframe = () => {
-  window.addEventListener('message', handleMessage);
+The (only for now?) other solution is to rely on iframe communication. The idea is to expose information the a child frame that will expose the information to another of its own child frame (etc... until the last vendor concerned is reached).
 
-  const iframe = document.createElement('iframe');
-  iframe.name = '__cmpLocator';
-  iframe.width = 0;
-  iframe.height = 0;
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-};
+We can deal with `iframe` communication using listeners on `message`:
+
+```js
+window.addEventListener("message", handleMessage); // makes the communication possible between the app and the third parties
 ```
 
-The iframe always exist since the user has given access to its data. 
-if user give consent the app is able to converse with it's child frame.
-After that the child frames will send messages to your app and return information concerning the previously agreed consents.
+:warning: Don't forget to register the `__cmpLocator` iframe to provide the third party information of the loading state of the CMP! (mandatory for the `ping` function):
+
+```js
+const iframe = document.createElement("iframe");
+iframe.name = "__cmpLocator";
+iframe.width = 0;
+iframe.height = 0;
+iframe.style.display = "none";
+document.body.appendChild(iframe);
+```
 
 #### Via (safe) iframe
-Safe frame is not available but you can see this issue : 
 
-[InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework#38](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/issues/38)
+For now, it doesn't seem possible to rely on safeframe. We manage to [open an issue](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/issues/38) on IAB github account, but we didn't get any answer.
 
-and this code :
+And since the documentation is not really precise (seriously, you got me \o/):
 
-[https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md#via-safeframes-](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/CMP%20JS%20API%20v1.1%20Final.md#via-safeframes-)
+> An **updated** safeFrame implementation/specification **will provide** the method $sf.ext.cmp(command, parameter)
 
-> An updated safeFrame implementation/specification  **will provide**  the method $sf.ext.cmp(command, parameter)
+We have to read under the line right?
